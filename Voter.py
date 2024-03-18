@@ -21,7 +21,6 @@ for filename in os.listdir(directory):
                 dest_file = open('pdf_content.txt','a')
             except FileNotFoundError:
                 dest_file = open('pdf_content.txt','w')
-#             print(pageob.extractText())
             dest_file.write(pageob.extractText())
             dest_file.close()
 
@@ -49,10 +48,7 @@ for eachline in out_fl.readlines():
         else:
             h_no=""
         gender = re.findall(r'.Gender\s:\s(.*?)Age',eachline)
-    #     name = re.findall(r'Name\s:\s(.*?)\s*',eachline)
         name = eachline.split("Name : ")[1].split(" ")[0].strip()
-#         age = re.findall(r'[A-Z]*\s\s(\d\d)\s.\w',eachline)
-#         f_name = re.findall(r'\sName\s:\s(.*?)\s\s\d\d',eachline)
         f_name_index = eachline.find("Father's Name : ")
     
         if f_name_index != -1:
