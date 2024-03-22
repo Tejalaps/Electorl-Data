@@ -15,6 +15,9 @@ for filename in os.listdir(directory):
             text_data = src_file.read()
         name_matches = re.findall(r'Name:\s([A-Z\s]+)\s', text_data)
         father_matches = re.findall(r"(Father|Husband|Mother)'s Name\s:\s([A-Z\s]+)\s",text_data)
+        house_matches = re.findall(r'House Number:\s(\S+)\s',text_data)
+        age_matches = re.findall(r'Age:\s(\d+)\s', text_data)
+        gender_matches = re.findall(r'Gender:\s([A-Z]+)\s',text_data)
         
 
         for i, name in enumerate(name_matches):
@@ -34,13 +37,30 @@ for filename in os.listdir(directory):
             else:
                 full_father_relation_name = father_name
                 full_father_name = father_matches[i][1].strip()
-
-       
+#             Father/Husband/Mother Name
+#             House number
+            try:
+                house_number = house_matches[i]
+            except IndexError:
+                house_number = None
+            try:
+                age = age_matches[i]
+            except IndexError:
+                age = None
+            try:
+                gender = gender_matches[i]
+            except IndexError:
+                gender = None
+                
             row= {
                 'Name': full_name,
                 "Relationship": full_father_relation_name,
-                "Father/Husband/Mother Name": full_father_name
+                "Father/Husband/Mother Name": full_father_name,
+                "House No": house_number,
+                "Age": age,
+                "Gender": gender
+                
             }
             rows.append(row)
 df = pd.DataFrame(rows)
-df.head(6)           
+df.head(100)           
