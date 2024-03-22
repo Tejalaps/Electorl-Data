@@ -26,14 +26,20 @@ for filename in os.listdir(directory):
 #             Relationship
             father_name = father_matches[i][0].strip()   
             father_parts = father_name.split()
+            fathers_part = father_matches[i][0].strip().split()
+
             if len(father_parts)>=2:
-                full_father_name = ' '.join(father_parts[:2])
+                full_father_relation_name = ' '.join(father_parts[:2])
+                full_father_name = ' '.join(father_part[:2])
             else:
-                full_father_name = father_name
+                full_father_relation_name = father_name
+                full_father_name = father_matches[i][1].strip()
+
        
             row= {
                 'Name': full_name,
-                "Relationship": full_father_name
+                "Relationship": full_father_relation_name,
+                "Father/Husband/Mother Name": full_father_name
             }
             rows.append(row)
 df = pd.DataFrame(rows)
