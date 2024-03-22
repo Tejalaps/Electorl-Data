@@ -16,13 +16,7 @@ for filename in os.listdir(directory):
         name_matches = re.findall(r'Name:\s([A-Z\s]+)\s', text_data)
         father_matches = re.findall(r"(Father|Husband|Mother)'s Name\s:\s([A-Z\s]+)\s",text_data)
         
-#         names = []
-#         fathers = []
-#         for i in range(len(name_matches)):
-#             names.append(name_matches[i])
-#             if i<len(father_matches):
-#                 fathers.append(father_matches[i])
-        
+
         for i, name in enumerate(name_matches):
             name_parts = name.strip().split()
             if len(name_parts)>=2:
