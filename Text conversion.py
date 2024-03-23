@@ -8,18 +8,37 @@ import fitz
 directory = r'C:\Users\AUSULTE\Downloads\e'
 
 rows = []
+current_assembly = None
+current_part_number = None
+section_name = None
+
+
 for filename in os.listdir(directory):
     if filename.endswith(".txt"):
         
         with open(os.path.join(directory, filename),'r') as src_file:
             text_data = src_file.read()
-        name_matches = re.findall(r'Name:\s([A-Z\s]+)\s', text_data)
-        father_matches = re.findall(r"(Father|Husband|Mother)'s Name\s:\s([A-Z\s]+)\s",text_data)
+        
+    
+        name_matches = re.findall(r'Name\s*:\s*([A-Za-z\s]+)\s', text_data)
+#         name_matches = re.findall(r'Name\s*:\s*([A-Za-z\s]+)\s(?=Father\'s Name|House Number|Age|Gender)', text_data)
+        father_matches = re.findall(r"(Father|Husband|Mother)'s\s+Name\s*:\s*([A-Za-z\s]+)\s",text_data)
         house_matches = re.findall(r'House Number:\s(\S+)\s',text_data)
         age_matches = re.findall(r'Age:\s(\d+)\s', text_data)
         gender_matches = re.findall(r'Gender:\s([A-Z]+)\s',text_data)
-        
+        assembly_match = re.search(r'Assembly Constituency No and Name : (.+?)\sPart number', text_data)
+        part_number_matches = re.findall(r'Part number\s*:\s*(\d+)', text_data)
+        section_matches = re.findall(r'Section No and Name\s:\s(.+)\s', text_data)
 
+        if section_matches:
+            section_name = section_matches[0]
+
+        if part_number_matches:
+            current_part_number = part_number_matches[0]
+
+        if assembly_match:
+            current_assembly = assembly_match.group(1)
+            
         for i, name in enumerate(name_matches):
             name_parts = name.strip().split()
             if len(name_parts)>=2:
@@ -27,16 +46,21 @@ for filename in os.listdir(directory):
             else:
                 full_name = name.strip()
 #             Relationship
-            father_name = father_matches[i][0].strip()   
-            father_parts = father_name.split()
-            fathers_part = father_matches[i][0].strip().split()
-
-            if len(father_parts)>=2:
-                full_father_relation_name = ' '.join(father_parts[:2])
-                full_father_name = ' '.join(father_part[:2])
+            if i < len(father_matches):
+                father_name = father_matches[i][1].strip()   
+                father_parts = father_name.split()
+                full_father_name = ' '.join(father_parts[:2]) if len(father_parts) >= 2 else father_name
+                full_father_relation_name = father_matches[i][0].strip()
             else:
-                full_father_relation_name = father_name
-                full_father_name = father_matches[i][1].strip()
+                full_father_name = None
+                full_father_relation_name = None
+
+#             if len(father_parts)>=2:
+#                 full_father_relation_name = ' '.join(father_parts[:2])
+#                 full_father_name = ' '.join(father_parts[:2])
+#             else:
+#                 full_father_relation_name = father_name
+#                 full_father_name = father_matches[i][1].strip()
 #             Father/Husband/Mother Name
 #             House number
             try:
@@ -53,14 +77,21 @@ for filename in os.listdir(directory):
                 gender = None
                 
             row= {
-                'Name': full_name,
+                'Name': full_name if not any(full_name in f for f in father_matches) else None,
+#                 "Name": full_name if not any(full_name == f[1] for f in father_matches) else None,
+                "Father/Husband/Mother Name": full_father_name if full_father_relation_name is not None else None,
                 "Relationship": full_father_relation_name,
-                "Father/Husband/Mother Name": full_father_name,
                 "House No": house_number,
                 "Age": age,
-                "Gender": gender
+                "Gender": gender,
+                "Assembly":current_assembly,
+                "Part number": current_part_number,
+                "serial no and name":section_name
                 
             }
             rows.append(row)
 df = pd.DataFrame(rows)
-df.head(100)           
+# df.head(1000)           
+writer = pd.ExcelWriter('output.xlsx')
+df.to_excel(writer,'Voter List')
+writer.close()
