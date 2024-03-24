@@ -11,7 +11,9 @@ rows = []
 current_assembly = None
 current_part_number = None
 section_name = None
-
+current_constituency = None
+current_pincode = None
+current_village = None
 
 for filename in os.listdir(directory):
     if filename.endswith(".txt"):
@@ -29,6 +31,13 @@ for filename in os.listdir(directory):
         assembly_match = re.search(r'Assembly Constituency No and Name : (.+?)\sPart number', text_data)
         part_number_matches = re.findall(r'Part number\s*:\s*(\d+)', text_data)
         section_matches = re.findall(r'Section No and Name\s:\s(.+)\s', text_data)
+        Constituency_matches = re.findall(r'Constituency is located\s:\s(.+)\s', text_data)
+        pincode_matches = re.findall(r'Pin Code\s(.+)\s', text_data)
+        village_matches = re.findall(r"Main Town/Village\s(.+)\s",text_data)
+#         ps_matches = re.findall(r"\b(?:Male/Female/General)\b[\s\n]*\n*(\S+)\s*",text_data)
+        ps_matches = re.findall(r"\((?:Male/Female/General)\)[\s\n]*\n*(.+)",text_data)
+
+
 
         if section_matches:
             section_name = section_matches[0]
@@ -38,6 +47,14 @@ for filename in os.listdir(directory):
 
         if assembly_match:
             current_assembly = assembly_match.group(1)
+        if Constituency_matches:
+            current_constituency = Constituency_matches[0]
+        if pincode_matches:
+            current_pincode = pincode_matches[0]
+        if village_matches:
+            current_village = village_matches[0]
+        if ps_matches:
+            current_ps = ps_matches[0]
             
         for i, name in enumerate(name_matches):
             name_parts = name.strip().split()
@@ -54,6 +71,7 @@ for filename in os.listdir(directory):
             else:
                 full_father_name = None
                 full_father_relation_name = None
+                
 
 #             if len(father_parts)>=2:
 #                 full_father_relation_name = ' '.join(father_parts[:2])
@@ -75,6 +93,10 @@ for filename in os.listdir(directory):
                 gender = gender_matches[i]
             except IndexError:
                 gender = None
+            currrent_ps = None
+            if ps_matches and i <len(ps_matches):
+                current_ps = ps_matches[i]
+            
                 
             row= {
                 'Name': full_name if not any(full_name in f for f in father_matches) else None,
@@ -86,12 +108,20 @@ for filename in os.listdir(directory):
                 "Gender": gender,
                 "Assembly":current_assembly,
                 "Part number": current_part_number,
-                "serial no and name":section_name
+                "serial no and name":section_name,
+                "Constituency is located":current_constituency,
+                "Pin Code":current_pincode,
+                "Village":current_village,
+                "Polling Station Name":current_ps
                 
             }
             rows.append(row)
 df = pd.DataFrame(rows)
-# df.head(1000)           
-writer = pd.ExcelWriter('output.xlsx')
-df.to_excel(writer,'Voter List')
-writer.close()
+df = df.dropna(subset=['Relationship', 'Father/Husband/Mother Name'], how='all')
+
+# Reset index after dropping rows
+df.reset_index(drop=True, inplace=True)
+df.head(10)           
+# writer = pd.ExcelWriter('output.xlsx')
+# df.to_excel(writer,'Voter List')
+# writer.close()
