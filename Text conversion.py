@@ -22,18 +22,19 @@ for filename in os.listdir(directory):
             text_data = src_file.read()
         
     
-        name_matches = re.findall(r'Name\s*:\s*([A-Za-z\s]+)\s', text_data)
+        name_matches = re.findall(r'Name\s*:\s*([A-Za-z\s]+)\s', text_data,re.IGNORECASE)
 #         name_matches = re.findall(r'Name\s*:\s*([A-Za-z\s]+)\s(?=Father\'s Name|House Number|Age|Gender)', text_data)
-        father_matches = re.findall(r"(Father|Husband|Mother)'s\s+Name\s*:\s*([A-Za-z\s]+)\s",text_data)
-        house_matches = re.findall(r'House Number:\s(\S+)\s',text_data)
-        age_matches = re.findall(r'Age:\s(\d+)\s', text_data)
-        gender_matches = re.findall(r'Gender:\s([A-Z]+)\s',text_data)
-        assembly_match = re.search(r'Assembly Constituency No and Name : (.+?)\sPart number', text_data)
-        part_number_matches = re.findall(r'Part number\s*:\s*(\d+)', text_data)
-        section_matches = re.findall(r'Section No and Name\s:\s(.+)\s', text_data)
-        Constituency_matches = re.findall(r'Constituency is located\s:\s(.+)\s', text_data)
-        pincode_matches = re.findall(r'Pin Code\s(.+)\s', text_data)
-        village_matches = re.findall(r"Main Town/Village\s(.+)\s",text_data)
+        father_matches = re.findall(r"(Fathers|Father's|Husband's|Mother's|Husbands|Mothers)\s+Name\s*:\s*([A-Za-z\s]+)\s",text_data,re.IGNORECASE)
+#         house_matches = re.findall(r'House Number:\s(\S+)\s',text_data)
+        house_matches = re.findall(r'House\s*(?:Number|No\.)\s*:\s*(\S+)\s',text_data,re.IGNORECASE)
+        age_matches = re.findall(r'Age\s*:\s*(\d+)\s', text_data,re.IGNORECASE)
+        gender_matches = re.findall(r'Gender\s*:\s*([A-Z]+)\s',text_data,re.IGNORECASE)
+        assembly_match = re.search(r'Assembly Constituency No and Name : (.+?)\sPart', text_data,re.IGNORECASE)
+        part_number_matches = re.findall(r'Part\s*(?:Number|No\.)\s*:\s*(\d+)', text_data,re.IGNORECASE)
+        section_matches = re.findall(r'Section No and Name\s*(?::\s*)?(.+)\s', text_data,re.IGNORECASE)
+        Constituency_matches = re.findall(r'Constituency is located\s*:\s*(.*(?:\n\S.*))', text_data)
+        pincode_matches = re.findall(r'Pin Code\s(.+)\s', text_data, re.IGNORECASE)
+        village_matches = re.findall(r"Main\s+Town(?:\/|\sor\s)Village\s*:\s*(.+)",text_data,re.IGNORECASE)
 #         ps_matches = re.findall(r"\b(?:Male/Female/General)\b[\s\n]*\n*(\S+)\s*",text_data)
         ps_matches = re.findall(r"\((?:Male/Female/General)\)[\s\n]*\n*(.+)",text_data)
 
@@ -62,6 +63,10 @@ for filename in os.listdir(directory):
                 full_name = ' '.join(name_parts)
             else:
                 full_name = name.strip()
+            unwanted_words = ['Name', 'Husbands', 'Fathers', 'Mothers','House Number']
+            if i == 0:
+                full_name = ' '.join([word for word in name_parts if word not in unwanted_words])
+                
 #             Relationship
             if i < len(father_matches):
                 father_name = father_matches[i][1].strip()   
@@ -108,7 +113,7 @@ for filename in os.listdir(directory):
                 "Gender": gender,
                 "Assembly":current_assembly,
                 "Part number": current_part_number,
-                "serial no and name":section_name,
+                "Section no and name":section_name,
                 "Constituency is located":current_constituency,
                 "Pin Code":current_pincode,
                 "Village":current_village,
@@ -117,11 +122,11 @@ for filename in os.listdir(directory):
             }
             rows.append(row)
 df = pd.DataFrame(rows)
-df = df.dropna(subset=['Relationship', 'Father/Husband/Mother Name'], how='all')
+# df = df.dropna(subset=['Relationship', 'Father/Husband/Mother Name'], how='all')
 
 # Reset index after dropping rows
 df.reset_index(drop=True, inplace=True)
-df.head(10)           
-# writer = pd.ExcelWriter('output.xlsx')
-# df.to_excel(writer,'Voter List')
-# writer.close()
+# df.head(10)           
+writer = pd.ExcelWriter('output.xlsx')
+df.to_excel(writer,'Voter List')
+writer.close()
