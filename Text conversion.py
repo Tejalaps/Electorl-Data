@@ -23,8 +23,11 @@ for filename in os.listdir(directory):
         
     
         name_matches = re.findall(r'Name\s*:\s*([A-Za-z\s]+)\s', text_data,re.IGNORECASE)
+#         print(name_matches)
 #         name_matches = re.findall(r'Name\s*:\s*([A-Za-z\s]+)\s(?=Father\'s Name|House Number|Age|Gender)', text_data)
-        father_matches = re.findall(r"(Fathers|Father's|Husband's|Mother's|Husbands|Mothers)\s+Name\s*:\s*([A-Za-z\s]+)\s",text_data,re.IGNORECASE)
+#         father_matches = re.findall(r"(Fathers|Father's|Husband's|Mother's|Husbands|Mothers)\s+Name\s*:\s*([A-Za-z\s]+)\s",text_data,re.IGNORECASE)
+        father_matches = re.findall(r"(Father|Husband|Mothe)\s*:\s*([A-Za-z\s]+)\s",text_data,re.IGNORECASE)
+#         print(father_matches)
 #         house_matches = re.findall(r'House Number:\s(\S+)\s',text_data)
         house_matches = re.findall(r'House\s*(?:Number|No\.)\s*:\s*(\S+)\s',text_data,re.IGNORECASE)
         age_matches = re.findall(r'Age\s*:\s*(\d+)\s', text_data,re.IGNORECASE)
@@ -63,7 +66,7 @@ for filename in os.listdir(directory):
                 full_name = ' '.join(name_parts)
             else:
                 full_name = name.strip()
-            unwanted_words = ['Name', 'Husbands', 'Fathers', 'Mothers','House Number']
+            unwanted_words = ['Name', 'Husband', 'Father', 'Mother','House Number']
             if i == 0:
                 full_name = ' '.join([word for word in name_parts if word not in unwanted_words])
                 
